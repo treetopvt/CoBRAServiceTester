@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:vm="clr-namespace:WCFServiceTester.ViewModel"
+                    xmlns:views="clr-namespace:WCFServiceTester.Views"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DataTemplate DataType="{x:Type vm:SensorServiceViewModel}">
+        <views:SensorServiceView />
+    </DataTemplate>
+</ResourceDictionary>

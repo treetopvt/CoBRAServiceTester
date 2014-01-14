@@ -1,0 +1,27 @@
+﻿<Window x:Class="WCFServiceTester.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        DataContext="{Binding Main, Source={StaticResource Locator}}"
+        Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/ViewDataTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBox Grid.Row="0" Text="{Binding ServerAddress}"/>
+        <TextBox Grid.Row="1" Text="{Binding ServiceUserName}" />
+        <TextBox Grid.Row="2" Text="{Binding ServiceUserPassword}" />
+        <Grid Grid.Row="3">
+            <ContentControl Content="{Binding CurrentServiceView}"/>
+        </Grid>
+    </Grid>
+</Window>
