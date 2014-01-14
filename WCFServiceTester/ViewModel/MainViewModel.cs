@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
+using WCFServiceTester.HelperClasses;
 namespace WCFServiceTester.ViewModel
 {
     /// <summary>
@@ -36,10 +36,11 @@ namespace WCFServiceTester.ViewModel
 
             _ServiceViewModels = new List<ServiceViewModelBase>() { new SensorServiceViewModel() };
             CurrentServiceView = _ServiceViewModels[0];
+            _AvailableServices =  GetAvailableServicesList();
         }
 
         [Flags]
-        public enum AvailableServices
+        public enum AvailableServicesEnum
         {
             [Description("Sensor Service")]
             SensorService = 0,
@@ -56,17 +57,29 @@ namespace WCFServiceTester.ViewModel
 
         #region "Helper Methods"
 
+        private List<String> GetAvailableServicesList()
+        {
+            var rtn = new List<String>();
+            foreach (var item in Enum.GetValues(typeof(AvailableServicesEnum)).Cast<AvailableServicesEnum>())
+            {
+                rtn.Add(item.ToString(true));
+                //item.ToString(true);
+            }
+            return rtn;
+        }
+
         private ViewModelBase GetViewModel(string serviceName)
         {
-            var foundVM = _ServiceViewModels.FirstOrDefault(vm => vm.ServiceName == serviceName);
+            var serviceEnum = Enum.GetValues(typeof(AvailableServicesEnum)).Cast<AvailableServicesEnum>().FirstOrDefault(a => a.ToString(true) == serviceName);
+            var foundVM = _ServiceViewModels.FirstOrDefault(vm => vm.ServiceName == serviceEnum.ToString(false));
             if (foundVM == null)
             {
-                switch (serviceName)
+                switch (serviceEnum)
                 {
-                    case "AlertService":
+                    case AvailableServicesEnum.AlertService:
                         foundVM = new AlertServiceViewModel();
                         break;
-                    case "SensorService":
+                    case AvailableServicesEnum.SensorService:
                         foundVM = new SensorServiceViewModel();
                         break;
                     default:
@@ -86,6 +99,8 @@ namespace WCFServiceTester.ViewModel
 
 
         #region "Observable Properties"
+
+
 
         /// <summary>
         /// The <see cref="ServerAddress" /> property's name.
@@ -210,6 +225,64 @@ namespace WCFServiceTester.ViewModel
                 var oldValue = _CurrentServiceView;
                 _CurrentServiceView = value;
                 RaisePropertyChanged(CurrentServiceViewPropertyName, oldValue, value, true);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="AvailableServices" /> property's name.
+        /// </summary>
+        public const string AvailableServicesPropertyName = "AvailableServices";
+
+        private List<String> _AvailableServices = new List<String>();
+
+        /// <summary>
+        /// Sets and gets the AvailableServices property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public List<String> AvailableServices
+        {
+            get
+            {
+                return _AvailableServices;
+            }
+
+            set
+            {
+                if (_AvailableServices == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(AvailableServicesPropertyName);
+                var oldValue = _AvailableServices;
+                _AvailableServices = value;
+                RaisePropertyChanged(AvailableServicesPropertyName, oldValue, value, true);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="SelectedService" /> property's name.
+        /// </summary>
+        public const string SelectedServicePropertyName = "SelectedService";
+
+        private string _SelectedService = "";
+
+        /// <summary>
+        /// Sets and gets the SelectedService property.
+        /// Changes to that property's value raise the PropertyChanged event.
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public string SelectedService
+        {
+            get
+            {
+                return _SelectedService;
+            }
+            set
+            {
+                Set(SelectedServicePropertyName, ref _SelectedService, value, true);
+                CurrentServiceView = GetViewModel(_SelectedService);
             }
         }
 
