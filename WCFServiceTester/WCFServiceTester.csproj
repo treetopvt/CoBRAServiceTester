@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="HelperClasses\EnumExtensions.cs" />
+    <Compile Include="Models\SensorModel.cs" />
     <Compile Include="Models\CredentialModel.cs" />
     <Compile Include="Models\OrgProjectModel.cs" />
     <Compile Include="Models\ProjectModel.cs" />
