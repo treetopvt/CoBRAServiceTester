@@ -12,10 +12,10 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Label>This is the Sensor Service</Label>
+        <Label>This is the Sensor Service Simple Insert</Label>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
-            <Label>User Name:</Label>
-            <TextBlock Text="{Binding Creds.Password}"/>
+            <Label>Sensor Name:</Label>
+            <TextBlock Text="{Binding EditSensor.SensorName}"/>
         </StackPanel>
     </Grid>
 </UserControl>
