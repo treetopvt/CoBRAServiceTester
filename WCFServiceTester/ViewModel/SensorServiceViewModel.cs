@@ -19,12 +19,13 @@ namespace WCFServiceTester.ViewModel
         public SensorServiceViewModel()
             : base("SensorService", "", new Models.CredentialModel())
         {
+            EditSensor = new Models.SensorModel();
         }
 
         public SensorServiceViewModel(string rootURL, Models.CredentialModel credentials)
             : base("SensorService", rootURL, credentials)
         {
-
+            EditSensor = new Models.SensorModel();
         }
 
 
@@ -43,5 +44,34 @@ namespace WCFServiceTester.ViewModel
             rtn.Add("ProjectGUID", Guid.NewGuid().ToString());
             return rtn;
         }
+        
+ 
+        #region Observable Properties
+        /// <summary>
+        /// The <see cref="EditSensor" /> property's name.
+        /// </summary>
+        public const string EditSensorPropertyName = "EditSensor";
+
+        private Models.SensorModel _myEditSensor = null;
+
+        /// <summary>
+        /// Sets and gets the EditSensor property.
+        /// Changes to that property's value raise the PropertyChanged event.
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public Models.SensorModel EditSensor
+        {
+            get
+            {
+                return _myEditSensor;
+            }
+            set
+            {
+                Set(EditSensorPropertyName, ref _myEditSensor, value, true);
+            }
+        }
+
+        #endregion
+
     }
 }
