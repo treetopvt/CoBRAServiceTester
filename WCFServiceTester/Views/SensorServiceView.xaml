@@ -5,9 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.ignore.com"
         mc:Ignorable="d ignore"
-        DataContext="{Binding ViewModelName, Source={StaticResource Locator}}">
+             >
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
         <Label>This is the Sensor Service</Label>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Label>User Name:</Label>
+            <TextBlock Text="{Binding Creds.Password}"/>
+        </StackPanel>
     </Grid>
 </UserControl>

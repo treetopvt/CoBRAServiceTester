@@ -1,4 +1,5 @@
 using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Messaging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,7 +34,7 @@ namespace WCFServiceTester.ViewModel
             ////{
             ////    // Code runs "for real"
             ////}
-
+            SubscribeToMessages();
             _ServiceViewModels = new List<ServiceViewModelBase>() { new SensorServiceViewModel() };
             CurrentServiceView = _ServiceViewModels[0];
             _AvailableServices =  GetAvailableServicesList();
@@ -56,6 +57,18 @@ namespace WCFServiceTester.ViewModel
 
 
         #region "Helper Methods"
+
+        private void SubscribeToMessages()
+        {
+
+        }
+
+        private void SendUpdateMessages()
+        {
+            var message = new NotificationMessage<Models.CredentialModel>(new Models.CredentialModel(ServiceUserName, ServiceUserPassword),"CredentialsUpdated");
+            Messenger.Default.Send(message);
+
+        }
 
         private List<String> GetAvailableServicesList()
         {
@@ -157,10 +170,13 @@ namespace WCFServiceTester.ViewModel
                 {
                     return;
                 }
-
-                RaisePropertyChanging(() => ServiceUserName);
-                _ServiceUserName = value;
-                RaisePropertyChanged(() => ServiceUserName);
+                
+                if (_ServiceUserName !=value && !String.IsNullOrEmpty(value)){
+                    RaisePropertyChanging(() => ServiceUserName);
+                    _ServiceUserName = value;
+                    RaisePropertyChanged(() => ServiceUserName);
+                    SendUpdateMessages();
+                }
             }
         }
 
