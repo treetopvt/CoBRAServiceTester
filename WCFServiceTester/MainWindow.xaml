@@ -32,9 +32,13 @@
             <Label Grid.Row="0" Grid.Column="0">Server URL:</Label>
             <Label Grid.Row="1" Grid.Column="0">Service Username:</Label>
             <Label Grid.Row="2" Grid.Column="0">Service Password:</Label>
+            <Label Grid.Row="3" Grid.Column="0">Impersonate As:</Label>
+
             <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ServerAddress}"/>
             <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ServiceUserName}" />
             <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ServiceUserPassword}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding ImpersonateUserName}" />
+
         </Grid>
 
 

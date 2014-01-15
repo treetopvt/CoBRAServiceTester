@@ -12,14 +12,14 @@ namespace WCFServiceTester.ViewModel
 {
     public class OrgProjectViewModel:ServiceViewModelBase
     {
-        public OrgProjectViewModel():base("OrgProjectService", "", "", "")
+        public OrgProjectViewModel():base("OrgProjectService", "", new Models.CredentialModel())
         {
             //don't want message from myself
             Messenger.Default.Unregister <NotificationMessage<Models.OrgProjectModel>>(this);
 
         }
-        public OrgProjectViewModel(string rootURL, string userName, string password)
-            : base("OrgProjectService", rootURL, userName, password)
+        public OrgProjectViewModel(string rootURL, Models.CredentialModel credentials)
+            : base("OrgProjectService", rootURL, credentials)
         {
             //don't want message from myself
             Messenger.Default.Unregister < NotificationMessage<Models.OrgProjectModel>>(this);
@@ -39,7 +39,7 @@ namespace WCFServiceTester.ViewModel
         /// </summary>
         public const string OrganizationNamePropertyName = "OrganizationName";
 
-        private string _OrganizationName = "";
+        private string _OrganizationName = "TomDev";
 
         /// <summary>
         /// Sets and gets the OrganizationName property.
@@ -127,9 +127,11 @@ namespace WCFServiceTester.ViewModel
         {
             //GetProjectList?OrganizationName={ORGANIZATIONNAME}&SinceDate={SINCEDATE}
             var data = new Dictionary<string,string>();
-            data.Add("ORGANIZATIONNAME", OrganizationName);
+            data.Add("OrganizationName", OrganizationName);
+            data.Add("SinceDate", new DateTime(2012, 01, 01).ToShortDateString());
             //data.Add("SINCE")
-            string result = await AuthenticatedGetData("GetProjectList", "ProjectService",new FormUrlEncodedContent(data));
+            string result = await AuthenticatedGetData("GetProjectList", "ProjectService",data);
+            ProjectList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.ProjectModel>>(result);
         }
     }
 }

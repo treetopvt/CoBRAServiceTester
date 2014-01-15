@@ -12,12 +12,14 @@ namespace WCFServiceTester.Models
         {
 
         }
-        public CredentialModel(string userName, string password)
+        public CredentialModel(string userName, string password, string impersonateUser = "")
         {
             UserName = userName;
             Password = password;
+            ImpersonateUserName = impersonateUser;
         }
         public string UserName { get; set; }
         public string Password { get; set; }
+        public string ImpersonateUserName { get; set; }
     }
 }

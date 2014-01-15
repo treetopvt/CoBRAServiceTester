@@ -1,9 +1,11 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Messaging;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace WCFServiceTester.ViewModel
 {
@@ -18,11 +20,11 @@ namespace WCFServiceTester.ViewModel
         /// <summary>
         /// Initializes a new instance of the ServiceViewModelBase class.
         /// </summary>
-        public ServiceViewModelBase(string serviceName, string rootURL, string userName, string password)
+        public ServiceViewModelBase(string serviceName, string rootURL, Models.CredentialModel credentials)
         {
             ServiceName = serviceName;
             _rootURL = rootURL;
-            this.Credientials = new Models.CredentialModel(userName, password);
+            this.Credientials = credentials;
             RegisterMessaging();
         }
 
@@ -61,39 +63,85 @@ namespace WCFServiceTester.ViewModel
 
         internal AuthenticationHeaderValue GetAuthHeader()
         {
- 
-
-                return new AuthenticationHeaderValue(
-                    "Basic",
-                    Convert.ToBase64String(
-                        System.Text.ASCIIEncoding.ASCII.GetBytes(
-                            string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password))));
+            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+            credString = credString.TrimEnd(':');
+            return new AuthenticationHeaderValue("Basic", credString);
+            
+                //return new AuthenticationHeaderValue(
+                //    "Basic",
+                //    Convert.ToBase64String(
+                //        System.Text.ASCIIEncoding.ASCII.GetBytes(
+                //            string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password))));
 
 
         }
 
         internal virtual string BuildFullURL(string relativeURL, string serviceName)
         {
-            return _rootURL + @"/cobrawcfservices/" + serviceName + @"/" + relativeURL;
+            return @"http://" + _rootURL + @"/cobrawcfservices/" + serviceName + @"/" + relativeURL;
 
         }
-        
-        internal async Task<string> AuthenticatedGetData(string relativeURL, string serviceName, FormUrlEncodedContent data)
+        internal virtual string BuildFullURL(string relativeURL, string serviceName, Dictionary<string, string> data)
         {
-            var authValue = GetAuthHeader();
+            var baseURL = BuildFullURL(relativeURL, serviceName);
+            if (data != null && data.Any())
+            {
+                baseURL = baseURL + "?" + data.First().Key + "=" + data.First().Value;
+                for (var i = 1; i < data.Count(); i++)
+                {
+                    baseURL = baseURL + "&" + data.ElementAt(i).Key + "=" + data.ElementAt(i).Value;
+                }
 
-            var url = BuildFullURL(relativeURL, serviceName);
-            HttpClient client = new HttpClient();
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(authValue.Parameter);
-            client.DefaultRequestHeaders.Add("Authorization", @"ServiceUser:test:TestUser");
-            HttpResponseMessage response = await client.PostAsync(new Uri(url), data);
+            }
+            return System.Uri.EscapeUriString(baseURL);
 
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            response.EnsureSuccessStatusCode();
-            string responseBody = await response.Content.ReadAsStringAsync();
-            return responseBody;
+        }        
+        internal async Task<string> AuthenticatedPostData(string relativeURL, string serviceName, Dictionary<string, string> data)
+        {
+            try
+            {
+                var authValue = GetAuthHeader();
+
+                var url = BuildFullURL(relativeURL, serviceName, data);
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+                HttpResponseMessage response = await client.PostAsync(new Uri(url), new FormUrlEncodedContent(data));
+
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return responseBody;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return "";
         }
 
+        internal async Task<string> AuthenticatedGetData(string relativeURL, string serviceName, Dictionary<string, string> data)
+        {
+            try
+            {
+                var authValue = GetAuthHeader();
+
+                var url = BuildFullURL(relativeURL, serviceName, data);
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                HttpResponseMessage response = await client.GetAsync(new Uri(url));
+
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(@"application/json");
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                    return responseBody;
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return "";
+        }
 
         internal bool CanMakeServiceCall()
         {

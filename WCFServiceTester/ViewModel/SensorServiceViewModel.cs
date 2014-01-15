@@ -17,12 +17,12 @@ namespace WCFServiceTester.ViewModel
         /// Initializes a new instance of the SensorServiceViewModel class.
         /// </summary>
         public SensorServiceViewModel()
-            : base("SensorService", "", "", "")
+            : base("SensorService", "", new Models.CredentialModel())
         {
         }
 
-        public SensorServiceViewModel(string rootURL, string userName, string password)
-            : base("SensorService", rootURL, userName, password)
+        public SensorServiceViewModel(string rootURL, Models.CredentialModel credentials)
+            : base("SensorService", rootURL, credentials)
         {
 
         }
@@ -34,7 +34,7 @@ namespace WCFServiceTester.ViewModel
             //&IsEnabled={ISENABLED}&inAlarm={INALARM}&isFaulted={ISFAULTED}&ReadingLevel={READINGLEVEL}&ReadingUnits={READINGUNITS}&Agent={AGENT}&statusDescription={STATUSDESCRIPTION}
             //&ReadingID={READINGID}&TimeOfReading={TIMEOFREADING}
             var data = BuildBaseKeyValuePairs();
-            string result = await AuthenticatedGetData("CreateSensorEntry", "SensorService",new FormUrlEncodedContent(data));
+            string result = await AuthenticatedGetData("CreateSensorEntry", "SensorService",data);
         }
 
         private Dictionary<string, string> BuildBaseKeyValuePairs()

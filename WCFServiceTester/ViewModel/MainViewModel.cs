@@ -68,7 +68,7 @@ namespace WCFServiceTester.ViewModel
 
         private void SendUpdateMessages()
         {
-            var message = new NotificationMessage<Models.CredentialModel>(new Models.CredentialModel(ServiceUserName, ServiceUserPassword),"CredentialsUpdated");
+            var message = new NotificationMessage<Models.CredentialModel>(new Models.CredentialModel(ServiceUserName, ServiceUserPassword, ImpersonateUserName),"CredentialsUpdated");
             Messenger.Default.Send(message);
 
         }
@@ -96,16 +96,17 @@ namespace WCFServiceTester.ViewModel
             var foundVM = _ServiceViewModels.FirstOrDefault(vm => vm.ServiceName == serviceEnum.ToString(false));
             if (foundVM == null)
             {
+                var credentials = new Models.CredentialModel(this.ServiceUserName, this.ServiceUserPassword, this.ImpersonateUserName);
                 switch (serviceEnum)
                 {
                     case AvailableServicesEnum.OrgProjectService:
-                        foundVM = new OrgProjectViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
+                        foundVM = new OrgProjectViewModel(this._ServerAddress, credentials);
                         break;
                     case AvailableServicesEnum.AlertService:
-                        foundVM = new AlertServiceViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
+                        foundVM = new AlertServiceViewModel(this._ServerAddress, credentials);
                         break;
                     case AvailableServicesEnum.SensorService:
-                        foundVM = new SensorServiceViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
+                        foundVM = new SensorServiceViewModel(this._ServerAddress, credentials);
                         break;
                     default:
                         foundVM = null;
@@ -132,7 +133,7 @@ namespace WCFServiceTester.ViewModel
         /// </summary>
         public const string ServerAddressPropertyName = "ServerAddress";
 
-        private string _ServerAddress = "cobraserver14.defensegp.com";
+        private string _ServerAddress = "cobraserver9.defensegp.com";
 
         /// <summary>
         /// Sets and gets the ServerAddress property.
@@ -155,6 +156,9 @@ namespace WCFServiceTester.ViewModel
                 RaisePropertyChanging(() => ServerAddress);
                 _ServerAddress = value;
                 RaisePropertyChanged(() => ServerAddress);
+                var message = new NotificationMessage<string>(_ServerAddress, "ServerUpdated");
+                Messenger.Default.Send(message);
+
             }
         }
 
@@ -163,7 +167,7 @@ namespace WCFServiceTester.ViewModel
         /// </summary>
         public const string ServiceUserNamePropertyName = "ServiceUserName";
 
-        private string _ServiceUserName = "serviceuser";
+        private string _ServiceUserName = "service@tomdev";
 
         /// <summary>
         /// Sets and gets the ServiceUserName property.
@@ -197,7 +201,7 @@ namespace WCFServiceTester.ViewModel
         /// </summary>
         public const string ServiceUserPasswordPropertyName = "ServiceUserPassword";
 
-        private string _ServiceUserPassword = "test";
+        private string _ServiceUserPassword = "service";
 
         /// <summary>
         /// Sets and gets the ServiceUserPassword property.
@@ -220,6 +224,40 @@ namespace WCFServiceTester.ViewModel
                 RaisePropertyChanging(() => ServiceUserPassword);
                 _ServiceUserPassword = value;
                 RaisePropertyChanged(() => ServiceUserPassword);
+                SendUpdateMessages();
+            }
+        }
+        /// <summary>
+        /// The <see cref="ImpersonateUserName" /> property's name.
+        /// </summary>
+        public const string ImpersonateUserNamePropertyName = "ImpersonateUserName";
+
+        private string _ImpersonateUserName = "Tom@TomDev";
+
+        /// <summary>
+        /// Sets and gets the ImpersonateUserName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public string ImpersonateUserName
+        {
+            get
+            {
+                return _ImpersonateUserName;
+            }
+
+            set
+            {
+                if (_ImpersonateUserName == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ImpersonateUserNamePropertyName);
+                var oldValue = _ImpersonateUserName;
+                _ImpersonateUserName = value;
+                RaisePropertyChanged(ImpersonateUserNamePropertyName, oldValue, value, true);
+                SendUpdateMessages();
             }
         }
 

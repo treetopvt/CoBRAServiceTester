@@ -25,7 +25,15 @@
                         <GridViewColumn Header="Project GUID" DisplayMemberBinding="{Binding ProjectGUID}"/>
                         <GridViewColumn Header="Name" DisplayMemberBinding="{Binding ProjectName}"/>
                         <GridViewColumn Header="Date Created" DisplayMemberBinding="{Binding DateCreated}"/>
-                        <GridViewColumn Header="Description #">
+                        <GridViewColumn Header="Type">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ProjectType}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <GridViewColumn Header="Description">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ProjectDescription}" />
