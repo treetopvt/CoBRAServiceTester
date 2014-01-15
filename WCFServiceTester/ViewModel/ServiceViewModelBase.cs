@@ -101,10 +101,12 @@ namespace WCFServiceTester.ViewModel
             try
             {
                 var authValue = GetAuthHeader();
-
                 var url = BuildFullURL(relativeURL, serviceName, data);
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+                //client.DefaultRequestHeaders.Authorization = GetAuthHeader();
+                            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+            credString = credString.TrimEnd(':');
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
                 HttpResponseMessage response = await client.PostAsync(new Uri(url), new FormUrlEncodedContent(data));
 
                 response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -127,7 +129,11 @@ namespace WCFServiceTester.ViewModel
 
                 var url = BuildFullURL(relativeURL, serviceName, data);
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+                //client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+                var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+                credString = credString.TrimEnd(':');
+                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
+
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await client.GetAsync(new Uri(url));
 
