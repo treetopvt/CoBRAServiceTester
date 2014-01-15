@@ -130,7 +130,7 @@ namespace WCFServiceTester.ViewModel
             data.Add("OrganizationName", OrganizationName);
             data.Add("SinceDate", new DateTime(2012, 01, 01).ToShortDateString());
             //data.Add("SINCE")
-            string result = await AuthenticatedGetData("GetProjectList", "ProjectService",data);
+            string result = await AuthenticatedGetData("GetProjectList", "ProjectService", data);
             ProjectList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.ProjectModel>>(result);
         }
     }
