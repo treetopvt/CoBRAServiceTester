@@ -6,4 +6,8 @@
     <DataTemplate DataType="{x:Type vm:SensorServiceViewModel}">
         <views:SensorServiceView />
     </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:OrgProjectViewModel}">
+        <views:OrgProjectView />
+    </DataTemplate>
 </ResourceDictionary>

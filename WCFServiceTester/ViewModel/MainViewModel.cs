@@ -35,18 +35,21 @@ namespace WCFServiceTester.ViewModel
             ////    // Code runs "for real"
             ////}
             SubscribeToMessages();
-            _ServiceViewModels = new List<ServiceViewModelBase>() { new SensorServiceViewModel() };
-            CurrentServiceView = _ServiceViewModels[0];
+            _ServiceViewModels = new List<ServiceViewModelBase>() {};
+            SelectedService = AvailableServicesEnum.OrgProjectService.ToString(true);
+            
+            
             _AvailableServices =  GetAvailableServicesList();
         }
 
-        [Flags]
         public enum AvailableServicesEnum
         {
+            [Description(@"Organization/Project Service")]
+            OrgProjectService = 0,
             [Description("Sensor Service")]
-            SensorService = 0,
+            SensorService = 1,
             [Description("Alert Service")]
-            AlertService = 1
+            AlertService = 2
         }
 
         #region "Member Variables"
@@ -60,7 +63,7 @@ namespace WCFServiceTester.ViewModel
 
         private void SubscribeToMessages()
         {
-
+            Messenger.Default.Register<NotificationMessage<Models.OrgProjectModel>>(this, updateOrgProject);
         }
 
         private void SendUpdateMessages()
@@ -68,6 +71,12 @@ namespace WCFServiceTester.ViewModel
             var message = new NotificationMessage<Models.CredentialModel>(new Models.CredentialModel(ServiceUserName, ServiceUserPassword),"CredentialsUpdated");
             Messenger.Default.Send(message);
 
+        }
+
+        private void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
+        {
+            this.OrganizationName = msg.Content.OrganizationName;
+            this.ProjectName = msg.Content.ProjectName;
         }
 
         private List<String> GetAvailableServicesList()
@@ -89,11 +98,14 @@ namespace WCFServiceTester.ViewModel
             {
                 switch (serviceEnum)
                 {
+                    case AvailableServicesEnum.OrgProjectService:
+                        foundVM = new OrgProjectViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
+                        break;
                     case AvailableServicesEnum.AlertService:
-                        foundVM = new AlertServiceViewModel();
+                        foundVM = new AlertServiceViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
                         break;
                     case AvailableServicesEnum.SensorService:
-                        foundVM = new SensorServiceViewModel();
+                        foundVM = new SensorServiceViewModel(this._ServerAddress, _ServiceUserName, _ServiceUserPassword);
                         break;
                     default:
                         foundVM = null;
@@ -299,6 +311,72 @@ namespace WCFServiceTester.ViewModel
             {
                 Set(SelectedServicePropertyName, ref _SelectedService, value, true);
                 CurrentServiceView = GetViewModel(_SelectedService);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="OrganizationName" /> property's name.
+        /// </summary>
+        public const string OrganizationNamePropertyName = "OrganizationName";
+
+        private string _OrganizationName = "";
+
+        /// <summary>
+        /// Sets and gets the OrganizationName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public string OrganizationName
+        {
+            get
+            {
+                return _OrganizationName;
+            }
+
+            set
+            {
+                if (_OrganizationName == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(OrganizationNamePropertyName);
+                var oldValue = _OrganizationName;
+                _OrganizationName = value;
+                RaisePropertyChanged(OrganizationNamePropertyName, oldValue, value, true);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ProjectName" /> property's name.
+        /// </summary>
+        public const string ProjectNamePropertyName = "ProjectName";
+
+        private string _ProjectName = "";
+
+        /// <summary>
+        /// Sets and gets the ProjectName property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public string ProjectName
+        {
+            get
+            {
+                return _ProjectName;
+            }
+
+            set
+            {
+                if (_ProjectName == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProjectNamePropertyName);
+                var oldValue = _ProjectName;
+                _ProjectName = value;
+                RaisePropertyChanged(ProjectNamePropertyName, oldValue, value, true);
             }
         }
 

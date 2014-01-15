@@ -1,4 +1,7 @@
 ﻿using GalaSoft.MvvmLight;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace WCFServiceTester.ViewModel
 {
@@ -14,33 +17,31 @@ namespace WCFServiceTester.ViewModel
         /// Initializes a new instance of the SensorServiceViewModel class.
         /// </summary>
         public SensorServiceViewModel()
-            : base("SensorService")
+            : base("SensorService", "", "", "")
         {
         }
 
-        /// <summary>
-        /// The <see cref="WelcomeMessage" /> property's name.
-        /// </summary>
-        public const string WelcomeMessagePropertyName = "WelcomeMessage";
-
-        private string _WelcomeMessage = "Welcome";
-
-        /// <summary>
-        /// Sets and gets the WelcomeMessage property.
-        /// Changes to that property's value raise the PropertyChanged event.
-        /// This property's value is broadcasted by the MessengerInstance when it changes.
-        /// </summary>
-        public string WelcomeMessage
+        public SensorServiceViewModel(string rootURL, string userName, string password)
+            : base("SensorService", rootURL, userName, password)
         {
-            get
-            {
-                return _WelcomeMessage;
-            }
-            set
-            {
-                Set(WelcomeMessagePropertyName, ref _WelcomeMessage, value, true);
-            }
+
         }
 
+
+        public async void PostSimpleSensor()
+        {
+            //?ProjectGUID={PROJECTGUID}&sensorName={SENSORNAME}&sensorGUID={SENSORGUID}&sensorType={SENSORTYPE}&Latitude={LATITUDE}&Longitude={LONGITUDE}
+            //&IsEnabled={ISENABLED}&inAlarm={INALARM}&isFaulted={ISFAULTED}&ReadingLevel={READINGLEVEL}&ReadingUnits={READINGUNITS}&Agent={AGENT}&statusDescription={STATUSDESCRIPTION}
+            //&ReadingID={READINGID}&TimeOfReading={TIMEOFREADING}
+            var data = BuildBaseKeyValuePairs();
+            string result = await AuthenticatedGetData("CreateSensorEntry", "SensorService",new FormUrlEncodedContent(data));
+        }
+
+        private Dictionary<string, string> BuildBaseKeyValuePairs()
+        {
+           var rtn = new Dictionary<string, string>();
+            rtn.Add("ProjectGUID", Guid.NewGuid().ToString());
+            return rtn;
+        }
     }
 }

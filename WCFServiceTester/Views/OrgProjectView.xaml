@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="WCFServiceTester.Views.OrgProjectView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ignore="http://www.ignore.com" d:DesignHeight="250" d:DesignWidth="400"
+        mc:Ignorable="d ignore">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <Label>Organization Name</Label>
+            <TextBox VerticalAlignment="Center" HorizontalAlignment="Stretch" MinWidth="150" Text="{Binding OrganizationName}"/>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Row="1" HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                <Label>Project List</Label>
+                <Button HorizontalAlignment="Right" Command="{Binding GetProjectListCommand}">Get Projects</Button>
+            </StackPanel>
+            <ListView Grid.Row="1" Margin="10" ItemsSource="{Binding ProjectList}"  SelectionMode="Single">
+                <ListView.View>
+                    <GridView >
+                        <GridViewColumn Header="Project GUID" DisplayMemberBinding="{Binding ProjectGUID}"/>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding ProjectName}"/>
+                        <GridViewColumn Header="Date Created" DisplayMemberBinding="{Binding DateCreated}"/>
+                        <GridViewColumn Header="Description #">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ProjectDescription}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+    </Grid>
+</UserControl>

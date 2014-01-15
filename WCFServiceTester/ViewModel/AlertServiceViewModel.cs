@@ -8,9 +8,16 @@ namespace WCFServiceTester.ViewModel
 {
     public class AlertServiceViewModel:ServiceViewModelBase
     {
-        public AlertServiceViewModel():base("AlertService")
+        public AlertServiceViewModel():base("AlertService", "", "", "")
         {
 
         }
+
+        public AlertServiceViewModel(string rootURL, string userName, string password)
+            : base("AlertService", rootURL, userName, password)
+        {
+
+        }
+
     }
 }
