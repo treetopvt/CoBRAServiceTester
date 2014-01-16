@@ -55,6 +55,7 @@ namespace WCFServiceTester.ViewModel
         #region "Member Variables"
 
         private List<ServiceViewModelBase> _ServiceViewModels;
+        private Models.OrgProjectModel _CurOrgProj = null;
 
         #endregion
 
@@ -91,10 +92,11 @@ namespace WCFServiceTester.ViewModel
 
         private void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
         {
-            this.OrganizationName = msg.Content.OrganizationName;
-            if (msg.Content.ActiveProject != null)
+            _CurOrgProj = msg.Content;
+            this.OrganizationName = _CurOrgProj.OrganizationName;
+            if (_CurOrgProj.ActiveProject != null)
             {
-                this.ProjectName = msg.Content.ActiveProject.ProjectName;
+                this.ProjectName = _CurOrgProj.ActiveProject.ProjectName;
             }
         }
 
@@ -125,7 +127,7 @@ namespace WCFServiceTester.ViewModel
                         foundVM = new AlertServiceViewModel(this._ServerAddress, credentials);
                         break;
                     case AvailableServicesEnum.SensorService:
-                        foundVM = new SensorServiceViewModel(this._ServerAddress, credentials);
+                        foundVM = new SensorServiceViewModel(this._ServerAddress, credentials, _CurOrgProj);
                         break;
                     default:
                         foundVM = null;

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.ignore.com"
+        xmlns:Models="clr-namespace:WCFServiceTester.Models"
         mc:Ignorable="d ignore"
              >
     <UserControl.Resources>
@@ -28,7 +29,20 @@
         
         <!--See the following link about switching templates based on a state (say from edit to readonly)-->
         <!--http://www.robertgray.net.au/posts/2012/6/selecting-wpf-datatemplates-at-runtime-->
-        <ContentControl Grid.Row="2" Content="{Binding EditSensor}" />
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width=".7*"/>
+            </Grid.ColumnDefinitions>
+            <ContentControl Grid.Row="2" Content="{Binding EditSensor}" />
+            <ListView Grid.Column="1" ItemsSource="{Binding ExistingSensorList}">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type Models:SensorModel}">
+                        <Label Content="{Binding SensorName}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
         <Button Grid.Row="3" HorizontalAlignment="Right" Command="{Binding SendSensorCommand}">Send Sensor</Button>
     </Grid>
 </UserControl>

@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -19,15 +20,18 @@ namespace WCFServiceTester.ViewModel
         /// Initializes a new instance of the SensorServiceViewModel class.
         /// </summary>
         public SensorServiceViewModel()
-            : base("SensorService", "", new Models.CredentialModel())
+            : this("", new Models.CredentialModel())
         {
-            EditSensor = new Models.SensorModel();
         }
 
-        public SensorServiceViewModel(string rootURL, Models.CredentialModel credentials)
-            : base("SensorService", rootURL, credentials)
+        public SensorServiceViewModel(string rootURL, Models.CredentialModel credentials, Models.OrgProjectModel orgProj)
+            : base("SensorService", rootURL, credentials, orgProj)
         {
             EditSensor = new Models.SensorModel();
+            if (_ActiveProject != null)
+            {
+                RetrieveExistingSensors(true, 25);
+            }
         }
 
 
@@ -58,6 +62,32 @@ namespace WCFServiceTester.ViewModel
         {
             return EditSensor != null && EditSensor.IsValidSensor() && base.CanMakeServiceCall() && _ActiveProject !=null;
         }
+
+
+        private RelayCommand _RetrieveCurrentSensorsCommand;
+
+        /// <summary>
+        /// Gets the RetrieveCurrentSensorsCommand.
+        /// </summary>
+        public RelayCommand RetrieveCurrentSensorsCommand
+        {
+            get
+            {
+                return _RetrieveCurrentSensorsCommand ?? (_RetrieveCurrentSensorsCommand = new RelayCommand(
+                    ExecuteRetrieveCurrentSensorsCommand,
+                    CanExecuteRetrieveCurrentSensorsCommand));
+            }
+        }
+
+        private void ExecuteRetrieveCurrentSensorsCommand()
+        {
+            RetrieveExistingSensors(true);
+        }
+
+        private bool CanExecuteRetrieveCurrentSensorsCommand()
+        {
+            return base.CanMakeServiceCall() && _ActiveProject != null;
+        }
         #endregion
 
 
@@ -69,6 +99,29 @@ namespace WCFServiceTester.ViewModel
             var data = BuildBaseKeyValuePairs();
             data.AddRange<string, string>(EditSensor.BuildValuePairs());
             string result = await AuthenticatedPostData("CreateSensorEntry", "SensorService",data);
+        }
+
+        public async void RetrieveExistingSensors(bool includeOrgSensors = true, int maxRecords = 0)
+        {
+            if (_ActiveProject == null)
+            {
+                SendStatus("Could not retrieve sensors because there is no project selected");
+                return;
+            }
+            SendStatus("Retrieving Sensors", 0, true);
+
+            //GetSensorsInProject?projectGUID={PROJECTGUID}&maxNumberOfRecords={MAXNUMBEROFRECORDS}&includeOrganizationSensors={INCLUDEORGANIZATIONSENSORS}
+            var data = new Dictionary<string, string>();
+            data.Add("ProjectGuid", _ActiveProject.ProjectGUID.ToString());
+            data.Add("MaxNumberOfRecords", maxRecords.ToString());
+            data.Add("IncludeOrganizationSensors", includeOrgSensors.ToString());
+
+            string result = await AuthenticatedGetData("GetSensorsInProject", "SensorService", data);
+            //handle fail state with message/status update
+            ExistingSensorList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.SensorModel>>(result);
+            SendStatus(String.Format("{0} Sensors Retrieved", ExistingSensorList.Count));
+
+
         }
 
         private Dictionary<string, string> BuildBaseKeyValuePairs()
@@ -84,6 +137,39 @@ namespace WCFServiceTester.ViewModel
  
         #region Observable Properties
 
+
+        /// <summary>
+        /// The <see cref="ExistingSensorList" /> property's name.
+        /// </summary>
+        public const string ExistingSensorListPropertyName = "ExistingSensorList";
+
+        private IList<Models.SensorModel> _ExistingSensorList = null;
+
+        /// <summary>
+        /// Sets and gets the ExistingSensorList property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public IList<Models.SensorModel> ExistingSensorList
+        {
+            get
+            {
+                return _ExistingSensorList;
+            }
+
+            set
+            {
+                if (_ExistingSensorList == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(() => ExistingSensorList);
+                var oldValue = _ExistingSensorList;
+                _ExistingSensorList = value;
+                RaisePropertyChanged(() => ExistingSensorList, oldValue, value, true);
+            }
+        }
 
         /// <summary>
         /// The <see cref="Longitude" /> property's name.
@@ -156,6 +242,18 @@ namespace WCFServiceTester.ViewModel
             }
         }
 
+        #endregion
+
+        #region Overridden Methods
+
+        protected override void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
+        {
+            base.updateOrgProject(msg);
+            if (_ActiveProject != null)
+            {
+                RetrieveExistingSensors(true, 25);
+            }
+        }
         #endregion
 
     }

@@ -20,14 +20,19 @@ namespace WCFServiceTester.ViewModel
         /// <summary>
         /// Initializes a new instance of the ServiceViewModelBase class.
         /// </summary>
-        public ServiceViewModelBase(string serviceName, string rootURL, Models.CredentialModel credentials)
+        public ServiceViewModelBase(string serviceName, string rootURL, Models.CredentialModel credentials):this(serviceName, rootURL, credentials, null)
+        {
+
+        }
+
+        public ServiceViewModelBase(string serviceName, string rootURL, Models.CredentialModel credentials, Models.OrgProjectModel orgProj)
         {
             ServiceName = serviceName;
             _rootURL = rootURL;
-            this.Credientials = credentials;
+            this.Credentials = credentials;
+            SetInitialOrgAndProject(orgProj);
             RegisterMessaging();
         }
-
 
         public string ServiceName { get; set; }
         
@@ -36,7 +41,7 @@ namespace WCFServiceTester.ViewModel
         protected Models.ProjectModel _ActiveProject = null;
         protected string _OrganizationName = "";
 
-        public Models.CredentialModel Credientials { get; set; }
+        public Models.CredentialModel Credentials { get; set; }
 
         internal void RegisterMessaging()
         {
@@ -48,18 +53,16 @@ namespace WCFServiceTester.ViewModel
 (this, updateOrgProject);
         }
 
-        private void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
+        protected virtual void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
         {
-            _OrganizationName = msg.Content.OrganizationName;
-            if (msg.Content.ActiveProject != null)
-            {
-                _ActiveProject = msg.Content.ActiveProject;
-            }
+            SetInitialOrgAndProject(msg.Content);
         }
+
+
 
         private void updateCredentials(NotificationMessage<Models.CredentialModel> msg)
         {
-            this.Credientials = msg.Content;
+            this.Credentials = msg.Content;
         }
 
         private void updateServer(NotificationMessage<string> msg){
@@ -70,7 +73,7 @@ namespace WCFServiceTester.ViewModel
 
         internal AuthenticationHeaderValue GetAuthHeader()
         {
-            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+            var credString = string.Format(@"{0}:{1}:{2}", Credentials.UserName, Credentials.Password, Credentials.ImpersonateUserName);
             credString = credString.TrimEnd(':');
             return new AuthenticationHeaderValue("Basic", credString);
             
@@ -140,7 +143,7 @@ namespace WCFServiceTester.ViewModel
 
             HttpClient client = new HttpClient();
             //client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
-            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+            var credString = string.Format(@"{0}:{1}:{2}", Credentials.UserName, Credentials.Password, Credentials.ImpersonateUserName);
             credString = credString.TrimEnd(':');
             client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
 
@@ -172,12 +175,12 @@ namespace WCFServiceTester.ViewModel
 
         internal bool CanMakeServiceCall()
         {
-            if (this.Credientials == null)
+            if (this.Credentials == null)
                 return false;
             if (string.IsNullOrEmpty(_rootURL))
                 return false;
 
-            return !String.IsNullOrEmpty(Credientials.UserName) && !string.IsNullOrEmpty(Credientials.Password);
+            return !String.IsNullOrEmpty(Credentials.UserName) && !string.IsNullOrEmpty(Credentials.Password);
         }
 
 
@@ -191,6 +194,25 @@ namespace WCFServiceTester.ViewModel
             var msg = new Messaging.StatusMessage(statusText, percentComplete, isIndeterminate);
             GalaSoft.MvvmLight.Messaging.Messenger.Default.Send<Messaging.StatusMessage>(msg);
         }
+
+
+        #region Public Methods
+
+        public void SetInitialOrgAndProject(Models.OrgProjectModel orgProj)
+        {
+            if (orgProj == null)
+                return;
+            _OrganizationName = orgProj.OrganizationName;
+            if (orgProj.ActiveProject != null)
+            {
+                _ActiveProject = orgProj.ActiveProject;
+            }
+        }
+
+        #endregion
+
     }
+
+
 
 }
