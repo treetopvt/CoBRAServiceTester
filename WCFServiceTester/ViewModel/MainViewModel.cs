@@ -64,6 +64,7 @@ namespace WCFServiceTester.ViewModel
         private void SubscribeToMessages()
         {
             Messenger.Default.Register<NotificationMessage<Models.OrgProjectModel>>(this, updateOrgProject);
+            Messenger.Default.Register<Messaging.StatusMessage>(this, UpdateStatus);
         }
 
         private void SendUpdateMessages()
@@ -73,10 +74,28 @@ namespace WCFServiceTester.ViewModel
 
         }
 
+        private void UpdateStatus(Messaging.StatusMessage msg)
+        {
+            if (!msg.IsIndeterminate || msg.PercentComplete==0)
+            {
+                ProgressBarValue = 0;
+                ProgressIsIndeterminate = false;
+            }
+            else
+            {
+                ProgressBarValue = msg.PercentComplete;
+                ProgressIsIndeterminate = true;
+            }
+            LastMessage = msg.Message;
+        }
+
         private void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
         {
             this.OrganizationName = msg.Content.OrganizationName;
-            this.ProjectName = msg.Content.ProjectName;
+            if (msg.Content.ActiveProject != null)
+            {
+                this.ProjectName = msg.Content.ActiveProject.ProjectName;
+            }
         }
 
         private List<String> GetAvailableServicesList()
@@ -126,6 +145,131 @@ namespace WCFServiceTester.ViewModel
 
         #region "Observable Properties"
 
+
+        /// <summary>
+        /// The <see cref="ProgressIsIndeterminate" /> property's name.
+        /// </summary>
+        public const string ProgressIsIndeterminatePropertyName = "ProgressIsIndeterminate";
+
+        private bool _ProgressIsIndeterminate = false;
+
+        /// <summary>
+        /// Sets and gets the ProgressIsIndeterminate property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool ProgressIsIndeterminate
+        {
+            get
+            {
+                return _ProgressIsIndeterminate;
+            }
+
+            set
+            {
+                if (_ProgressIsIndeterminate == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProgressIsIndeterminatePropertyName);
+                _ProgressIsIndeterminate = value;
+                RaisePropertyChanged(ProgressIsIndeterminatePropertyName);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="LastStatus" /> property's name.
+        /// </summary>
+        public const string LastStatusPropertyName = "LastStatus";
+
+        private string _LastStatus = "";
+
+        /// <summary>
+        /// Sets and gets the LastStatus property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string LastStatus
+        {
+            get
+            {
+                return _LastStatus;
+            }
+
+            set
+            {
+                if (_LastStatus == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LastStatusPropertyName);
+                _LastStatus = value;
+                RaisePropertyChanged(LastStatusPropertyName);
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="ProgressBarValue" /> property's name.
+        /// </summary>
+        public const string ProgressBarValuePropertyName = "ProgressBarValue";
+
+        private int _ProgressBarValue = 0;
+
+        /// <summary>
+        /// Sets and gets the ProgressBarValue property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public int ProgressBarValue
+        {
+            get
+            {
+                return _ProgressBarValue;
+            }
+
+            set
+            {
+                if (_ProgressBarValue == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(ProgressBarValuePropertyName);
+                _ProgressBarValue = value;
+                RaisePropertyChanged(ProgressBarValuePropertyName);
+            }
+        }
+
+
+        /// <summary>
+        /// The <see cref="LastMessage" /> property's name.
+        /// </summary>
+        public const string LastMessagePropertyName = "LastMessage";
+
+        private string _LastMessage = "";
+
+        /// <summary>
+        /// Sets and gets the LastMessage property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public string LastMessage
+        {
+            get
+            {
+                return _LastMessage;
+            }
+
+            set
+            {
+                if (_LastMessage == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(LastMessagePropertyName);
+                _LastMessage = value;
+                RaisePropertyChanged(LastMessagePropertyName);
+            }
+        }
 
 
         /// <summary>

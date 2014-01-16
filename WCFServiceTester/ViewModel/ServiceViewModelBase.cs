@@ -33,6 +33,9 @@ namespace WCFServiceTester.ViewModel
         
         private string _rootURL = "";
 
+        protected Models.ProjectModel _ActiveProject = null;
+        protected string _OrganizationName = "";
+
         public Models.CredentialModel Credientials { get; set; }
 
         internal void RegisterMessaging()
@@ -47,7 +50,11 @@ namespace WCFServiceTester.ViewModel
 
         private void updateOrgProject(NotificationMessage<Models.OrgProjectModel> msg)
         {
-
+            _OrganizationName = msg.Content.OrganizationName;
+            if (msg.Content.ActiveProject != null)
+            {
+                _ActiveProject = msg.Content.ActiveProject;
+            }
         }
 
         private void updateCredentials(NotificationMessage<Models.CredentialModel> msg)
@@ -89,7 +96,16 @@ namespace WCFServiceTester.ViewModel
                 baseURL = baseURL + "?" + data.First().Key + "=" + data.First().Value;
                 for (var i = 1; i < data.Count(); i++)
                 {
-                    baseURL = baseURL + "&" + data.ElementAt(i).Key + "=" + data.ElementAt(i).Value;
+                    var value = data.ElementAt(i).Value;
+                    if (String.IsNullOrEmpty(value))
+                    {
+                        baseURL = baseURL + "&" + data.ElementAt(i).Key;
+                    }
+                    else
+                    {
+                        baseURL = baseURL + "&" + data.ElementAt(i).Key + "=" + value;
+                    }
+                    
                 }
 
             }
@@ -100,14 +116,11 @@ namespace WCFServiceTester.ViewModel
         {
             try
             {
-                var authValue = GetAuthHeader();
                 var url = BuildFullURL(relativeURL, serviceName, data);
-                HttpClient client = new HttpClient();
-                //client.DefaultRequestHeaders.Authorization = GetAuthHeader();
-                            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
-            credString = credString.TrimEnd(':');
-            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
-                HttpResponseMessage response = await client.PostAsync(new Uri(url), new FormUrlEncodedContent(data));
+
+                var client = GetClient();
+                HttpResponseMessage response = await client.PostAsync(new Uri(url), new StringContent(""));
+                //HttpResponseMessage response = await client.PostAsync(new Uri(url), new FormUrlEncodedContent(data));//would love to use content to post, but we use the QueryString
 
                 response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 response.EnsureSuccessStatusCode();
@@ -121,20 +134,28 @@ namespace WCFServiceTester.ViewModel
             return "";
         }
 
+        private HttpClient GetClient()
+        {
+            // var authValue = GetAuthHeader();
+
+            HttpClient client = new HttpClient();
+            //client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
+            var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
+            credString = credString.TrimEnd(':');
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
+
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            return client;
+        }
+
         internal async Task<string> AuthenticatedGetData(string relativeURL, string serviceName, Dictionary<string, string> data)
         {
             try
             {
-                var authValue = GetAuthHeader();
-
+                var client = GetClient();
                 var url = BuildFullURL(relativeURL, serviceName, data);
-                HttpClient client = new HttpClient();
-                //client.DefaultRequestHeaders.Authorization = GetAuthHeader();//new AuthenticationHeaderValue("Basic", string.Format(@"ServiceUser:{0}:{1}", Credientials.UserName, Credientials.Password));
-                var credString = string.Format(@"{0}:{1}:{2}", Credientials.UserName, Credientials.Password, Credientials.ImpersonateUserName);
-                credString = credString.TrimEnd(':');
-                client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", credString);
 
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 HttpResponseMessage response = await client.GetAsync(new Uri(url));
 
                 response.Content.Headers.ContentType = new MediaTypeHeaderValue(@"application/json");
@@ -159,6 +180,17 @@ namespace WCFServiceTester.ViewModel
             return !String.IsNullOrEmpty(Credientials.UserName) && !string.IsNullOrEmpty(Credientials.Password);
         }
 
+
+        internal void SendStatus(string statusText) {
+
+            var msg = new Messaging.StatusMessage(statusText, 0, false);
+            GalaSoft.MvvmLight.Messaging.Messenger.Default.Send<Messaging.StatusMessage>(msg);
+        }
+        internal void SendStatus(string statusText, int percentComplete, bool isIndeterminate)
+        {
+            var msg = new Messaging.StatusMessage(statusText, percentComplete, isIndeterminate);
+            GalaSoft.MvvmLight.Messaging.Messenger.Default.Send<Messaging.StatusMessage>(msg);
+        }
     }
 
 }

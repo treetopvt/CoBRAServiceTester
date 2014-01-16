@@ -6,9 +6,17 @@
         xmlns:ignore="http://www.ignore.com"
         mc:Ignorable="d ignore"
              >
-
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Templates/SensorModelTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
@@ -17,5 +25,10 @@
             <Label>Sensor Name:</Label>
             <TextBlock Text="{Binding EditSensor.SensorName}"/>
         </StackPanel>
+        
+        <!--See the following link about switching templates based on a state (say from edit to readonly)-->
+        <!--http://www.robertgray.net.au/posts/2012/6/selecting-wpf-datatemplates-at-runtime-->
+        <ContentControl Grid.Row="2" Content="{Binding EditSensor}" />
+        <Button Grid.Row="3" HorizontalAlignment="Right" Command="{Binding SendSensorCommand}">Send Sensor</Button>
     </Grid>
 </UserControl>

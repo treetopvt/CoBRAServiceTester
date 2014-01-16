@@ -16,19 +16,20 @@ namespace WCFServiceTester.ViewModel
         {
             //don't want message from myself
             Messenger.Default.Unregister <NotificationMessage<Models.OrgProjectModel>>(this);
-
+            SendOrgProjectChangeMessage("OrganizationName");
         }
         public OrgProjectViewModel(string rootURL, Models.CredentialModel credentials)
             : base("OrgProjectService", rootURL, credentials)
         {
             //don't want message from myself
             Messenger.Default.Unregister < NotificationMessage<Models.OrgProjectModel>>(this);
+            SendOrgProjectChangeMessage("OrganizationName");
         }
 
 
         private void SendOrgProjectChangeMessage(string valueUpdated)
         {
-            var message = new NotificationMessage<Models.OrgProjectModel>(new Models.OrgProjectModel() { OrganizationName = OrganizationName }, valueUpdated);
+            var message = new NotificationMessage<Models.OrgProjectModel>(new Models.OrgProjectModel() { OrganizationName = OrganizationName, ActiveProject = SelectedProject }, valueUpdated);
             Messenger.Default.Send(message);
         }
 
@@ -96,6 +97,41 @@ namespace WCFServiceTester.ViewModel
                 RaisePropertyChanging(ProjectListPropertyName);
                 _ProjectList = value;
                 RaisePropertyChanged(ProjectListPropertyName);
+                SendOrgProjectChangeMessage("ActiveProject");
+            }
+        }
+
+        /// <summary>
+        /// The <see cref="SelectedProject" /> property's name.
+        /// </summary>
+        public const string SelectedProjectPropertyName = "SelectedProject";
+
+        private Models.ProjectModel _SelectedProject = null;
+
+        /// <summary>
+        /// Sets and gets the SelectedProject property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// This property's value is broadcasted by the MessengerInstance when it changes.
+        /// </summary>
+        public Models.ProjectModel SelectedProject
+        {
+            get
+            {
+                return _SelectedProject;
+            }
+
+            set
+            {
+                if (_SelectedProject == value)
+                {
+                    return;
+                }
+
+                RaisePropertyChanging(SelectedProjectPropertyName);
+                var oldValue = _SelectedProject;
+                _SelectedProject = value;
+                RaisePropertyChanged(SelectedProjectPropertyName, oldValue, value, true);
+                SendOrgProjectChangeMessage("ActiveProject");
             }
         }
         #endregion
@@ -125,13 +161,16 @@ namespace WCFServiceTester.ViewModel
 
         private async void GetProjects()
         {
+            SendStatus("Retrieving Projects",0, true);
             //GetProjectList?OrganizationName={ORGANIZATIONNAME}&SinceDate={SINCEDATE}
             var data = new Dictionary<string,string>();
             data.Add("OrganizationName", OrganizationName);
             data.Add("SinceDate", new DateTime(2012, 01, 01).ToShortDateString());
-            //data.Add("SINCE")
+            
             string result = await AuthenticatedGetData("GetProjectList", "ProjectService", data);
+            //handle fail state with message/status update
             ProjectList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Models.ProjectModel>>(result);
+            SendStatus(String.Format("{0} Projects Retrieved", ProjectList.Count));
         }
     }
 }
